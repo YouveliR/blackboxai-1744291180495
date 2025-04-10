@@ -204,24 +204,52 @@ document.addEventListener('DOMContentLoaded', () => {
             const startBtn = document.getElementById('startBtn');
             if (startBtn) {
                 const rect = startBtn.getBoundingClientRect();
-                console.log('Start button bounds:', {
+                // Get button position relative to viewport
+                const viewportBounds = {
                     left: Math.round(rect.left),
                     top: Math.round(rect.top),
                     right: Math.round(rect.right),
                     bottom: Math.round(rect.bottom),
                     width: Math.round(rect.width),
                     height: Math.round(rect.height)
-                });
+                };
+                viewportBounds.centerX = Math.round(viewportBounds.left + viewportBounds.width / 2);
+                viewportBounds.centerY = Math.round(viewportBounds.top + viewportBounds.height / 2);
                 
-                // Check if click was inside button
-                if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                    console.log('Click was INSIDE the start button!');
+                console.log('Start button viewport bounds:', viewportBounds);
+                console.log(`To click the button center, use coordinates: (${viewportBounds.centerX}, ${viewportBounds.centerY})`);
+                
+                // Log all coordinates for debugging
+                console.log('Click coordinates:', {
+                    client: { x, y },
+                    viewport: { x: x - window.scrollX, y: y - window.scrollY },
+                    button: {
+                        left: Math.round(rect.left),
+                        top: Math.round(rect.top),
+                        right: Math.round(rect.right),
+                        bottom: Math.round(rect.bottom),
+                        width: Math.round(rect.width),
+                        height: Math.round(rect.height),
+                        centerX: Math.round(rect.left + rect.width/2),
+                        centerY: Math.round(rect.top + rect.height/2)
+                    }
+                });
+
+                // Check if click was inside button using viewport-relative coordinates
+                const clickX = x - window.scrollX;
+                const clickY = y - window.scrollY;
+                
+                if (clickX >= rect.left && clickX <= rect.right && clickY >= rect.top && clickY <= rect.bottom) {
+                    console.log('✅ Click was INSIDE the start button!');
+                    console.log('Button clicked at relative position:', {
+                        x: Math.round(clickX - rect.left),
+                        y: Math.round(clickY - rect.top)
+                    });
                 } else {
-                    console.log('Click was OUTSIDE the start button');
-                    console.log(`Distance from button: ${Math.round(Math.sqrt(
-                        Math.pow(Math.max(rect.left - x, x - rect.right, 0), 2) +
-                        Math.pow(Math.max(rect.top - y, y - rect.bottom, 0), 2)
-                    ))}px`);
+                    console.log('❌ Click was OUTSIDE the start button');
+                    const centerX = rect.left + rect.width/2;
+                    const centerY = rect.top + rect.height/2;
+                    console.log(`Try clicking at (${Math.round(centerX)}, ${Math.round(centerY)})`);
                 }
             }
         });
