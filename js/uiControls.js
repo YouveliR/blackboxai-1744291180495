@@ -18,6 +18,30 @@ class SimulationControls {
         if (!this.nodeCountSlider) console.error('Node count slider not found');
         if (!this.simSpeedSlider) console.error('Speed slider not found');
         
+        // Add debug click handler to document
+        document.addEventListener('click', (event) => {
+            // Get button position
+            const rect = this.startBtn.getBoundingClientRect();
+            console.log('Click position:', { x: event.clientX, y: event.clientY });
+            console.log('Start button bounds:', {
+                left: Math.round(rect.left),
+                top: Math.round(rect.top),
+                right: Math.round(rect.right),
+                bottom: Math.round(rect.bottom)
+            });
+
+            // If we're in the control panel area (right side of screen)
+            if (event.clientX > window.innerWidth * 0.6) {
+                console.log('Click in control panel area detected');
+                // Directly call the start handler
+                if (!this.simulation.isRunning) {
+                    console.log('Starting simulation directly');
+                    this.simulation.start();
+                    this.updateControlState('running');
+                }
+            }
+        });
+        
         // Bind event listeners
         console.log('Binding event listeners');
         this.bindEventListeners();
@@ -43,6 +67,11 @@ class SimulationControls {
             } else {
                 console.log('Start button is disabled');
             }
+        });
+
+        // Add click debug listener
+        document.addEventListener('click', (event) => {
+            console.log('Click detected at:', event.clientX, event.clientY);
         });
 
         this.pauseBtn.addEventListener('click', (event) => {
