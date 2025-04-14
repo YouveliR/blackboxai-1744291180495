@@ -61,9 +61,23 @@ class RadioNode {
         this.updateRoutingTable();
     }
 
+    pixelToMeters(pixelDistance) {
+        // Convert pixel distance to meters (1km = 1000m)
+        // Canvas diagonal represents 1km
+        const maxPixelDistance = Math.sqrt(800 * 800 + 600 * 600);
+        return (pixelDistance / maxPixelDistance) * 1000;
+    }
+
     canCommunicateWith(otherNode) {
-        const distance = this.calculateDistance(otherNode);
-        const signalStrength = this.calculateSignalStrength(distance);
+        const pixelDistance = this.calculateDistance(otherNode);
+        const distance = this.pixelToMeters(pixelDistance);
+        
+        // Only allow connections within 1km range
+        if (distance > 1000) {
+            return false;
+        }
+        
+        const signalStrength = this.calculateSignalStrength(pixelDistance);
         return signalStrength >= this.sensitivity;
     }
 
@@ -73,11 +87,13 @@ class RadioNode {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    calculateSignalStrength(distance) {
+    calculateSignalStrength(pixelDistance) {
+        const distance = this.pixelToMeters(pixelDistance);
+        const distanceKm = distance / 1000;
+        
         // Free space path loss formula
         // FSPL (dB) = 20log10(d) + 20log10(f) + 32.44
         // where d is distance in kilometers and f is frequency in MHz
-        const distanceKm = distance / 1000;
         const pathLoss = 20 * Math.log10(distanceKm) + 20 * Math.log10(this.frequency) + 32.44;
         return this.transmitPower - pathLoss;
     }
