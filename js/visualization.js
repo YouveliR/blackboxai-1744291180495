@@ -104,13 +104,13 @@ class NetworkVisualizer {
     drawConnections(nodes) {
         for (const node of nodes) {
             for (const connectedNode of node.connectedNodes) {
-                // Calculate signal strength for connection visualization
-                const distance = node.calculateDistance(connectedNode);
-                const signalStrength = node.calculateSignalStrength(distance);
+                // Calculate distance and signal strength
+                const pixelDistance = node.calculateDistance(connectedNode);
+                const distance = node.pixelToMeters(pixelDistance);
+                const signalStrength = node.calculateSignalStrength(pixelDistance);
                 
                 // Normalize signal strength for opacity
-                // -110 dBm (sensitivity) to 14 dBm (max power)
-                const normalizedStrength = (signalStrength + 110) / (14 + 110);
+                const normalizedStrength = (signalStrength - node.sensitivity) / (node.transmitPower - node.sensitivity);
                 const opacity = Math.max(0.1, Math.min(0.8, normalizedStrength));
                 
                 // Draw connection line
@@ -121,13 +121,19 @@ class NetworkVisualizer {
                 this.ctx.lineWidth = 1;
                 this.ctx.stroke();
 
-                // Draw signal strength indicator
+                // Calculate text position
                 const midX = (node.x + connectedNode.x) / 2;
                 const midY = (node.y + connectedNode.y) / 2;
+                
+                // Draw signal strength above the line
                 this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
                 this.ctx.font = '10px Arial';
                 this.ctx.textAlign = 'center';
-                this.ctx.fillText(`${Math.round(signalStrength)} dBm`, midX, midY);
+                this.ctx.fillText(`${Math.round(signalStrength)} dBm`, midX, midY - 8);
+                
+                // Draw distance below the line
+                this.ctx.fillStyle = 'rgba(144, 238, 144, 0.8)'; // Light green color
+                this.ctx.fillText(`${Math.round(distance)}m`, midX, midY + 8);
             }
         }
     }
